@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="fa">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>قبله‌نما موبایل</title>
+<style>
+  :root{
+    --bg:#0f1724;
+    --card:#0b1220;
+    --accent:#ef4444;
+    --muted:#94a3b8;
+    --white:#f8fafc;
+  }
+  html,body{height:100%;margin:0;font-family:Tahoma,Arial,sans-serif;direction:rtl;background:linear-gradient(180deg,var(--bg),#071024);}
+  .wrap{max-width:420px;margin:18px auto;padding:18px;color:var(--white);}
+  header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  header h1{font-size:18px;margin:0}
+  .card{background:linear-gradient(180deg,var(--card),#07121a);border-radius:14px;padding:14px;box-shadow:0 6px 18px rgba(3,7,18,0.6);}
+  .compass-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;padding:12px}
+  .dial{width:280px;height:280px;border-radius:50%;background:radial-gradient(circle at 30% 30%, rgba(255,255,255,0.02), transparent 20%), rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;position:relative;box-shadow: inset 0 4px 18px rgba(0,0,0,0.6);}
+  .ring{width:92%;height:92%;border-radius:50%;border:6px solid rgba(255,255,255,0.06);position:relative;display:flex;align-items:center;justify-content:center;}
+  .marks{position:absolute;inset:0;display:block;}
+  .mark{position:absolute;left:50%;top:10px;width:2px;height:14px;background:rgba(255,255,255,0.35);transform-origin:center 130px;}
+  /* create 16 marks */
+  ${[...Array(16)].map((_,i)=>`.mark:nth-child(${i+1}){transform:translateX(-50%) rotate(${i*22.5}deg)}`).join("\n")}
+  .north-label{position:absolute;top:14px;left:50%;transform:translateX(-50%);font-weight:700;color:var(--accent);text-shadow:0 2px 6px rgba(0,0,0,0.6)}
+  .arrow{position:absolute;width:36px;height:160px;display:flex;align-items:flex-start;justify-content:center;pointer-events:none;transform-origin:50% 72px;transition:transform 200ms cubic-bezier(.2,.8,.2,1);}
+  .arrow svg{width:36px;height:160px;filter:drop-shadow(0 6px 10px rgba(0,0,0,0.45));}
+  .qibla-indicator{position:absolute;bottom:14px;padding:6px 12px;background:rgba(0,0,0,0.35);border-radius:12px;color:var(--white);font-weight:600;backdrop-filter:blur(4px);}
+  .info{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px;color:var(--muted);font-size:14px}
+  .btns{display:flex;gap:8px;justify-content:center;margin-top:12px}
+  button{background:var(--accent);border:none;padding:10px 12px;border-radius:10px;color:white;font-weight:700;box-shadow:0 6px 18px rgba(239,68,68,0.14)}
+  .small{background:#1e293b;padding:8px 10px;border-radius:10px;color:var(--white);font-weight:600;border:1px solid rgba(255,255,255,0.03)}
+  .manual{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:10px}
+  input[type="number"]{width:120px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--white)}
+  footer{margin-top:12px;color:var(--muted);font-size:13px;text-align:center}
+  @media (max-width:380px){.dial{width:240px;height:240px}.arrow{height:140px}.arrow svg{height:140px}}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='38' height='38' viewBox='0 0 24 24'><circle cx='12' cy='12' r='11' fill='%23ef4444'/><path d='M12 4v9l4 2' stroke='%23fff' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>" alt="" style="width:38px;height:38px;border-radius:8px"/>
+      <div>
+        <h1>قبله‌نما موبایل</h1>
+        <div style="color:var(--muted);font-size:13px">موقعیت: <span id="locText">نامشخص</span></div>
+      </div>
+    </header>
+
+    <div class="card">
+      <div class="compass-wrap">
+        <div class="dial" id="dial">
+          <div class="ring" id="ring">
+            <div class="marks" aria-hidden="true">
+              ${[...Array(16)].map(()=>`<div class="mark"></div>`).join("")}
+            </div>
+            <div class="north-label">شمال (N)</div>
+
+            <!-- Arrow that will point to Qibla relative to device heading -->
+            <div class="arrow" id="arrow" style="transform: rotate(0deg);">
+              <!-- simple arrow SVG (نوک به بالا در حالت 0deg) -->
+              <svg viewBox="0 0 36 160" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMin meet">
+                <defs>
+                  <linearGradient id="g" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0" stop-color="#ef4444"/>
+                    <stop offset="1" stop-color="#b91c1c"/>
+                  </linearGradient>
+                </defs>
+                <g>
+                  <path d="M18 6 L4 56 L12 56 L12 150 L24 150 L24 56 L32 56 Z" fill="url(#g)"/>
+                  <circle cx="18" cy="112" r="8" fill="rgba(255,255,255,0.06)"/>
+                </g>
+              </svg>
+            </div>
+
+            <div class="qibla-indicator" id="qiblaText">قبله: --° — جهت: --</div>
+          </div>
+        </div>
+
+        <div class="info" id="info">
+          <div>زاویه قبله (از شمال): <strong id="bearing">--°</strong></div>
+          <div>هدایت دستگاه: <strong id="heading">--°</strong></div>
+        </div>
+
+        <div class="btns">
+          <button id="btnLocation">دریافت موقعیت (GPS)</button>
+          <button class="small" id="btnEnableCompass">فعال کردن جهت‌یاب</button>
+        </div>
+
+        <div class="manual">
+          <label style="color:var(--muted);font-size:13px">یا مختصات دستی:</label>
+          <input type="number" id="lat" placeholder="عرض (مثال 35.6892)" step="any" />
+          <input type="number" id="lon" placeholder="طول (مثال 51.3890)" step="any" />
+          <button id="btnManual">محاسبه</button>
+        </div>
+
+        <div style="margin-top:10px;color:var(--muted);font-size:13px;text-align:center;padding:0 8px">
+          توجه: برای استفاده از جهت‌یاب لازم است مرورگر مجوز سنسور جهت را بدهد و صفحه در پروتکل HTTPS اجرا شود. در صورت نبود سنسور، فلش نسبت به شمال ثابت نشان داده می‌شود.
+        </div>
+
+      </div>
+    </div>
+
+    <footer>کعبه (مکه): حدودی 21.422487°N , 39.826206°E</footer>
+  </div>
+
+<script>
+(() => {
+  // مختصات کعبه
+  const KAABA = { lat: 21.422487, lon: 39.826206 };
+
+  // helper: deg <-> rad
+  const deg2rad = d => d * Math.PI / 180;
+  const rad2deg = r => r * 180 / Math.PI;
+
+  // محاسبه bearing از نقطه 1 به 2 (درجه نسبت به شمال، ساعتگرد)
+  function calculateBearing(lat1, lon1, lat2, lon2) {
+    const φ1 = deg2rad(lat1);
+    const φ2 = deg2rad(lat2);
+    const Δλ = deg2rad(lon2 - lon1);
+    const x = Math.sin(Δλ) * Math.cos(φ2);
+    const y = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+    let θ = Math.atan2(x, y); // note: atan2(x,y) to get angle from north
+    let bearing = (rad2deg(θ) + 360) % 360;
+    return bearing;
+  }
+
+  // تبدیل زاویه به متن جهت کلی
+  function bearingToDirection(deg) {
+    const dirs = ['شمال','شمال‌شرقی','شرق','جنوب‌شرقی','جنوب','جنوب‌غربی','غرب','شمال‌غربی'];
+    const ix = Math.round(deg / 45) % 8;
+    return dirs[ix];
+  }
+
+  // عناصر DOM
+  const locText = document.getElementById('locText');
+  const bearingEl = document.getElementById('bearing');
+  const headingEl = document.getElementById('heading');
+  const qiblaText = document.getElementById('qiblaText');
+  const arrow = document.getElementById('arrow');
+  const btnLocation = document.getElementById('btnLocation');
+  const btnManual = document.getElementById('btnManual');
+  const latIn = document.getElementById('lat');
+  const lonIn = document.getElementById('lon');
+  const btnEnableCompass = document.getElementById('btnEnableCompass');
+
+  let userPos = null;      // {lat, lon}
+  let deviceHeading = null; // in degrees (0 = north)
+  let qiblaBearing = null;  // computed (0-360)
+
+  // به‌روزرسانی UI و چرخش فلش
+  function updateUI() {
+    if (!userPos) {
+      bearingEl.textContent = '--°';
+      qiblaText.textContent = 'قبله: --° — جهت: --';
+      locText.textContent = 'نامشخص';
+      return;
+    }
+    qiblaBearing = calculateBearing(userPos.lat, userPos.lon, KAABA.lat, KAABA.lon);
+    bearingEl.textContent = qiblaBearing.toFixed(1) + '°';
+    locText.textContent = userPos.lat.toFixed(5) + ' , ' + userPos.lon.toFixed(5);
+
+    const direction = bearingToDirection(qiblaBearing);
+    if (deviceHeading === null) {
+      // نمایش ثابت: شمال بالا -> می‌چرخانیم فلش به سمت bearing
+      arrow.style.transform = `rotate(${qiblaBearing}deg)`;
+      headingEl.textContent = '--°';
+      qiblaText.textContent = `قبله: ${qiblaBearing.toFixed(1)}° — جهت: ${direction}`;
+    } else {
+      // اگر جهت دستگاه موجود است: محاسبه زاویه نسبی بین جهت دستگاه و قبله
+      // اگر دستگاه به سمت heading (مثلاً 30°) باشد، برای اینکه نوک فلش سمت قبله قرار بگیرد، زاویه نسبی = قبله - heading
+      const rel = ((qiblaBearing - deviceHeading) + 540) % 360 - 180; // -180..180
+      arrow.style.transform = `rotate(${rel}deg)`;
+      headingEl.textContent = deviceHeading.toFixed(1) + '°';
+      qiblaText.textContent = `قبله: ${qiblaBearing.toFixed(1)}° — نسبت به دستگاه: ${rel.toFixed(1)}° — ${direction}`;
+    }
+  }
+
+  // درخواست موقعیت GPS
+  btnLocation.addEventListener('click', () => {
+    if (!navigator.geolocation) {
+      alert('موقعیت‌یاب در این مرورگر پشتیبانی نمی‌شود.');
+      return;
+    }
+    btnLocation.disabled = true;
+    btnLocation.textContent = 'درحال دریافت...';
+    navigator.geolocation.getCurrentPosition(pos => {
+      userPos = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+      btnLocation.disabled = false;
+      btnLocation.textContent = 'دریافت موقعیت (GPS)';
+      updateUI();
+    }, err => {
+      btnLocation.disabled = false;
+      btnLocation.textContent = 'دریافت موقعیت (GPS)';
+      alert('خطا در دریافت موقعیت: ' + (err.message || err.code));
+    }, { enableHighAccuracy: true, maximumAge: 60_000, timeout: 15000 });
+  });
+
+  // محاسبه دستی
+  btnManual.addEventListener('click', () => {
+    const lat = parseFloat(latIn.value);
+    const lon = parseFloat(lonIn.value);
+    if (!isFinite(lat) || !isFinite(lon)) {
+      alert('لطفاً عرض و طول معتبر وارد کنید.');
+      return;
+    }
+    userPos = { lat, lon };
+    updateUI();
+  });
+
+  // خواندن رویداد DeviceOrientation برای جهت‌یاب
+  function handleDeviceOrientation(e) {
+    // راهکار ترکیبی برای سازگاری:
+    // - iOS Safari: e.webkitCompassHeading (درجه از شمال، ساعتگرد)
+    // - برخی مرورگرها: e.alpha (زاویه نسبت به صفحه مرجع). در کروم اندروید e.absolute ممکن است true و alpha زاویه نسبت به شمال باشد.
+    let heading = null;
+    if (typeof e.webkitCompassHeading !== 'undefined' && e.webkitCompassAccuracy !== undefined) {
+      heading = e.webkitCompassHeading; // iOS
+    } else if (e.absolute === true && typeof e.alpha === 'number') {
+      // در بسیاری از اندرویدها alpha = جهت نسبت به شمال، اما بعضی مرورگرها آن را 360 - alpha نشان می‌دهند
+      // عملگر استاندارد: heading = 360 - alpha to convert browser alpha to compass heading for some implementations
+      // بررسی تجربی: اگر رفتار نامناسب دیدید، می‌توان این بخش را تغییر داد.
+      heading = 360 - e.alpha;
+    } else if (typeof e.alpha === 'number') {
+      // fallback: استفاده مستقیم از alpha (ممکن است اشتباه باشد ولی بهتر از هیچ)
+      heading = 360 - e.alpha;
+    }
+
+    if (typeof heading === 'number') {
+      deviceHeading = (heading + 360) % 360;
+      updateUI();
+    }
+  }
+
+  // فعالسازی جهت‌یاب (در iOS 13+ نیاز به درخواست مجوز از کاربر است)
+  btnEnableCompass.addEventListener('click', async () => {
+    // iOS / Safari: DeviceOrientationEvent.requestPermission
+    if (typeof DeviceOrientationEvent !== 'undefined' &&
+        typeof DeviceOrientationEvent.requestPermission === 'function') {
+      try {
+        const perm = await DeviceOrientationEvent.requestPermission();
+        if (perm === 'granted') {
+          window.addEventListener('deviceorientation', handleDeviceOrientation, true);
+          btnEnableCompass.textContent = 'جهت‌یاب فعال شد';
+          btnEnableCompass.disabled = true;
+        } else {
+          alert('دسترسی جهت‌یاب رد شد.');
+        }
+      } catch (err) {
+        alert('خطا در درخواست مجوز جهت‌یاب: ' + err);
+      }
+    } else {
+      // مرورگرهای اندروید معمولاً نیاز به مجوز جداگانه ندارند (ولی باید HTTPS باشد)
+      window.addEventListener('deviceorientationabsolute' in window ? 'deviceorientationabsolute' : 'deviceorientation', handleDeviceOrientation, true);
+      btnEnableCompass.textContent = 'جهت‌یاب فعال شد';
+      btnEnableCompass.disabled = true;
+    }
+  });
+
+  // بارگذاری اولیه: اگر کاربر از قبل مختصات وارد کرده باشد یا بخواهد، UI را آپدیت می‌کنیم
+  updateUI();
+
+  // نکته: اگر می‌خواهید جهت‌یاب به‌طور خودکار فعال شود، می‌توانید اینجا فراخوانی کنید
+  // اما بهتر است کاربر خودش دکمه را بزند تا مجوزها واضح باشند.
+})();
+</script>
+</body>
+</html>
