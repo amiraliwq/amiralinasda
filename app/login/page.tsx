@@ -51,7 +51,10 @@ export default function LoginPage() {
     });
 
     if (error) setError(persianAuthError(error.message));
-    else router.push(next);
+    else {
+      const { data: profile } = await createClient().from("profiles").select("role").single();
+      router.push(profile?.role === "admin" ? "/admin" : next);
+    }
     setBusy(false);
   }
 
