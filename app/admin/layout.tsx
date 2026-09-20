@@ -1,10 +1,1 @@
-import {redirect} from "next/navigation";
-import {createClient} from "../../lib/supabase/server";
-export default async function AdminLayout({children}:{children:React.ReactNode}){
- const supabase=await createClient();
- const {data:{user}}=await supabase.auth.getUser();
- if(!user) redirect("/login?next=/admin");
- const {data:profile}=await supabase.from("profiles").select("role").eq("id",user.id).maybeSingle();
- if(profile?.role!=="admin") redirect("/admin/403");
- return <>{children}</>;
-}
+"use client"; import {useEffect,useState} from "react"; import {usePathname,useRouter} from "next/navigation"; import {createClient} from "../../lib/supabase/client"; export default function AdminLayout({children}:{children:React.ReactNode}){const [ok,setOk]=useState<boolean|null>(null);const router=useRouter();const path=usePathname();useEffect(()=>{(async()=>{const s=createClient();const {data:{user}}=await s.auth.getUser();if(!user){router.replace("/login?next="+encodeURIComponent(path||"/admin"));return}const {data:p}=await s.from("profiles").select("role").eq("id",user.id).maybeSingle();if(p?.role!=="admin"){router.replace("/admin/403");return}setOk(true)})()},[router,path]);if(ok!==true)return <main dir="rtl" className="grid min-h-screen place-items-center bg-gray-50"><div>در حال بررسی دسترسی…</div></main>;return <>{children}</>}
