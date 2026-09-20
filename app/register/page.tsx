@@ -17,7 +17,7 @@ function normalizePhone(value: string) {
 
 function persianSignupError(message: string) {
   const m = message.toLowerCase();
-  if (m.includes("already registered") || m.includes("already exists") || m.includes("duplicate")) {
+  if (m.includes("already registered") || m.includes("already exists") || m.includes("duplicate") || m.includes("user already registered") || m.includes("phone number has already been registered")) {
     return "این شماره قبلاً ثبت شده است. لطفاً یک شماره قابل دسترس وارد کنید.";
   }
   if (m.includes("phone logins are disabled")) return "ثبت‌نام با شماره تماس در Supabase فعال نشده است.";
