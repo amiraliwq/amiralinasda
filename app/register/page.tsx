@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "../../lib/supabase/client";
 
@@ -32,8 +32,7 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState("");
   const [busy, setBusy] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const next = searchParams.get("next") || "/";
+  const next = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("next") || "/" : "/";
 
   async function submit(e: FormEvent) {
     e.preventDefault();
