@@ -2,13 +2,13 @@ import Link from "next/link";
 import { createClient } from "../lib/supabase/server";
 import { ArrowLeft, BookOpen, ShoppingBag, Sparkles } from "lucide-react";
 
-type Product = { id:string; name:string|null; slug:string|null; price:number|null; active:boolean|null };
+type Product = { id:string; title:string|null; slug:string|null; price:number|null; active:boolean|null; image_url:string|null };
 
 export default async function HomePage() {
   const supabase = await createClient();
   const { data: products } = await supabase
     .from("products")
-    .select("id,name,slug,price,active")
+    .select("id,title,slug,price,active,image_url")
     .eq("active", true)
     .order("created_at", { ascending: false })
     .limit(8);
@@ -73,7 +73,7 @@ export default async function HomePage() {
                 <div className="flex aspect-square items-center justify-center rounded-2xl bg-[#f1f0ec]">
                   <ShoppingBag className="text-black/20" size={42} />
                 </div>
-                <h3 className="mt-4 font-bold">{p.name || "محصول"}</h3>
+                <h3 className="mt-4 font-bold">{p.title || "محصول"}</h3>
                 <div className="mt-2 font-black">{Number(p.price || 0).toLocaleString("fa-IR")} تومان</div>
               </Link>
             ))}
