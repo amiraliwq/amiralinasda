@@ -16,7 +16,8 @@ export default function AdminDashboard(){
   const {data:profile}=await supabase.from("profiles").select("role").eq("id",user.id).maybeSingle();
   if(profile?.role!=="admin"){setError("دسترسی غیرمجاز");setLoading(false);return}
   setAllowed(true);
-  const [orders,pending,users,products,courses,enrollments,assignments,posts]=await Promise.all([
+  const [orders,recentOrders,pending,users,products,courses,enrollments,assignments,posts]=await Promise.all([
+   supabase.from("orders").select("id",{count:"exact",head:true}),
    supabase.from("orders").select("id,total,status,created_at").order("created_at",{ascending:false}).limit(8),
    supabase.from("payments").select("id",{count:"exact",head:true}).in("status",["pending","review"]),
    supabase.from("profiles").select("id",{count:"exact",head:true}),
@@ -26,9 +27,9 @@ export default function AdminDashboard(){
    supabase.from("assignment_submissions").select("id",{count:"exact",head:true}).eq("status","submitted"),
    supabase.from("blog_posts").select("id",{count:"exact",head:true}).eq("published",true)
   ]);
-  setRecent(orders.data??[]);
+  setRecent(recentOrders.data??[]);
   setMetrics([
-   {label:"سفارش‌ها",value:orders.data?.length??0,icon:<ShoppingBag/>,href:"/admin/orders"},
+   {label:"سفارش‌ها",value:orders.count??0,icon:<ShoppingBag/>,href:"/admin/orders"},
    {label:"پرداخت‌های در انتظار",value:pending.count??0,icon:<CreditCard/>,href:"/admin/payments"},
    {label:"کاربران",value:users.count??0,icon:<Users/>,href:"/admin/users"},
    {label:"محصولات فعال",value:products.count??0,icon:<Package/>,href:"/admin/products"},
