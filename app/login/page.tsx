@@ -1,7 +1,7 @@
 "use client";
 
-import {useState} from "react";
-import {useRouter,useSearchParams} from "next/navigation";
+import {useEffect,useState} from "react";
+import {useRouter} from "next/navigation";
 import {createClient} from "../../lib/supabase/client";
 import Link from "next/link";
 
@@ -26,10 +26,16 @@ export default function LoginPage(){
   const [otpSent,setOtpSent]=useState(false);
   const [error,setError]=useState("");
   const [busy,setBusy]=useState(false);
+  const [next,setNext]=useState("/");
+  const [registered,setRegistered]=useState(false);
   const router=useRouter();
-  const params=useSearchParams();
-  const next=params.get("next")||"/";
-  const adminFlow=next.startsWith("/admin");
+
+  useEffect(()=>{
+    const search=window.location.search;
+    const p=new URLSearchParams(search);
+    setNext(p.get("next")||"/");
+    setRegistered(p.get("registered")==="1");
+  },[]);
 
   async function submitPassword(e:any){
     e.preventDefault();setBusy(true);setError("");
@@ -58,12 +64,13 @@ export default function LoginPage(){
     router.push(next);
   }
 
+  const adminFlow=next.startsWith("/admin");
+
   return <main dir="rtl" className="grid min-h-screen place-items-center auth-bg p-6">
     <div className="w-full max-w-md auth-card rounded-[2rem] p-8 shadow-2xl">
       <Link href="/" className="text-sm text-violet-700">بازگشت به سایت</Link>
       <h1 className="mt-5 text-3xl font-black">{adminFlow?"ورود مدیر":"ورود به حساب"}</h1>
       <p className="mt-2 text-black/50">{adminFlow?"کد ورود به شماره مدیر ارسال می‌شود.":"برای خرید و استفاده از آموزش‌ها وارد شوید."}</p>
-
       {adminFlow ? <form onSubmit={verifyOtp}>
         <label className="mt-8 block text-sm">شماره موبایل
           <input required inputMode="tel" autoComplete="tel" value={phone} onChange={e=>setPhone(e.target.value)} className="mt-2 w-full auth-input rounded-xl p-3" placeholder="09123456789" dir="ltr"/>
@@ -82,8 +89,7 @@ export default function LoginPage(){
         <button disabled={busy} className="mt-6 w-full rounded-2xl auth-button p-3 font-bold text-white shadow-lg disabled:opacity-50">{busy?"در حال ورود...":"ورود"}</button>
         <p className="mt-5 text-center text-sm text-slate-500">حساب نداری؟ <Link href="/signup" className="font-bold text-violet-700">ثبت‌نام</Link></p>
       </form>}
-
-      {params.get("registered")==="1"&&<div className="mt-5 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">ثبت‌نام با موفقیت انجام شد؛ اکنون وارد شوید.</div>}
+      {registered&&<div className="mt-5 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">ثبت‌نام با موفقیت انجام شد؛ اکنون وارد شوید.</div>}
       {error&&<div className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</div>}
     </div>
   </main>
