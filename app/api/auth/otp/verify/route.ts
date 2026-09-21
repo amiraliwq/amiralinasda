@@ -52,8 +52,13 @@ export async function POST(request: NextRequest) {
     }
 
     const email = `phone-${phone.replace(/^0/,"")}@auth.amirali-razi-iran.local`;
-    let {data:userData,error:userError} = await supabase.auth.admin.listUsers({page:1,perPage:1000});
-    const existing = userData?.users.find(u=>u.email===email);
+    let existing = null;
+    for (let page = 1; page <= 10 && !existing; page += 1) {
+      const pageResult = await supabase.auth.admin.listUsers({page, perPage:100});
+      if (pageResult.error) throw pageResult.error;
+      existing = pageResult.data.users.find((u) => u.email === email) ?? null;
+      if (pageResult.data.users.length < 100) break;
+    }
 
     let userId = existing?.id;
     if (!userId) {
