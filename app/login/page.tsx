@@ -35,7 +35,7 @@ export default function LoginPage(){
     e.preventDefault();setBusy(true);setError("");
     const normalized=normalizePhone(phone);
     if(!normalized){setError("لطفاً یک شماره تلفن معتبر وارد کنید.");setBusy(false);return;}
-    const {error}=await createClient().auth.signInWithPassword({phone:normalized,password});
+    const {error}=await createClient().auth.signInWithPassword({email:`phone-${normalized.replace(/^\\+98/,'') }@auth.amirali-razi-iran.local`,password});
     if(error)setError(messageFor(error.message));else router.push(next);
     setBusy(false);
   }
