@@ -15,7 +15,7 @@
     "react-dom": "latest",
     "lucide-react": "latest",
     "recharts": "latest",
-    "kavenegar": "1.1.5"
+    "kavenegar": "1.1.4"
   },
   "devDependencies": {
     "@types/node": "latest",
