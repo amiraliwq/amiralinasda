@@ -1,11 +1,10 @@
+"use client";
 import Link from "next/link";
-
-export default async function AdminActionPage({ params }: { params: Promise<{ section: string; action: string }> }) {
-  const { section, action } = await params;
-  const labels: Record<string,string> = { products: "محصول", payments: "پرداخت", blog: "مقاله", courses: "دوره" };
-  const label = labels[section];
-  if (!label || action !== "new") {
-    return <main className="grid min-h-screen place-items-center p-6"><div className="admin-card p-8 text-center"><h1 className="text-xl font-bold">صفحه پیدا نشد</h1><Link className="mt-4 inline-block text-purple-700" href="/admin">بازگشت به مدیریت</Link></div></main>;
-  }
-  return <main dir="rtl" className="grid min-h-screen place-items-center bg-gray-50 p-6"><div className="admin-card w-full max-w-xl p-8 text-center"><h1 className="text-2xl font-black">ایجاد {label} جدید</h1><p className="mt-3 text-gray-500">این مسیر فعال است؛ فرم ثبت واقعی Supabase در مرحله بعد به آن متصل می‌شود.</p><Link href={"/admin/"+section} className="mt-6 inline-block rounded-xl bg-black px-5 py-3 text-white">بازگشت</Link></div></main>;
+import {useState} from "react";
+const fields:Record<string,[string,string][]>={products:[["title","عنوان"],["slug","نامک"],["description","توضیحات"],["price","قیمت"],["stock","موجودی"],["type","نوع"],["category","دسته‌بندی"]],categories:[["name","نام"],["slug","نامک"]],courses:[["title","عنوان"],["slug","نامک"],["description","توضیحات"],["category","دسته"],["level","سطح"],["price","قیمت"]],blog:[["title","عنوان"],["slug","نامک"],["excerpt","خلاصه"],["content","متن"]]};
+export default function AdminActionPage({params}:{params:Promise<{section:string;action:string}>}){
+ const [section,setSection]=useState(""); const [data,setData]=useState<Record<string,any>>({}); const [msg,setMsg]=useState(""); const [busy,setBusy]=useState(false);
+ useState(()=>{params.then(p=>setSection(p.section))});
+ async function save(){setBusy(true);setMsg("");try{const r=await fetch("/api/admin/mutate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({section,action:"create",data})});const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error);setMsg("با موفقیت ذخیره شد.");}catch(e){setMsg(e instanceof Error?e.message:"ذخیره انجام نشد.");}finally{setBusy(false)}}
+ return <main dir="rtl" className="min-h-screen bg-gray-50 p-5"><div className="mx-auto max-w-2xl"><Link href={"/admin/"+section} className="text-sm text-purple-700">← بازگشت</Link><div className="admin-card mt-5 p-7"><h1 className="text-2xl font-black">ایجاد {section==="products"?"محصول":section==="courses"?"دوره":section==="blog"?"مقاله":"دسته‌بندی"} جدید</h1><div className="mt-6 space-y-4">{(fields[section]||[]).map(([key,label])=><label key={key} className="block text-sm">{label}{["description","excerpt","content"].includes(key)?<textarea rows={4} value={data[key]||""} onChange={e=>setData({...data,[key]:e.target.value})} className="mt-2 w-full rounded-xl border p-3"/>:<input value={data[key]||""} onChange={e=>setData({...data,[key]:e.target.value})} className="mt-2 w-full rounded-xl border p-3"/>}</label>)}</div><button disabled={busy} onClick={save} className="mt-6 rounded-xl bg-black px-6 py-3 font-bold text-white disabled:opacity-50">{busy?"در حال ذخیره...":"ذخیره"}</button>{msg&&<p className="mt-4 rounded-xl bg-gray-100 p-3">{msg}</p>}</div></div></main>
 }
