@@ -1,10 +1,10 @@
 "use client";
 import Link from "next/link";
-import {useState} from "react";
+import {useEffect,useState} from "react";
 const fields:Record<string,[string,string][]>={products:[["title","عنوان"],["slug","نامک"],["description","توضیحات"],["price","قیمت"],["stock","موجودی"],["type","نوع"],["category","دسته‌بندی"]],categories:[["name","نام"],["slug","نامک"]],courses:[["title","عنوان"],["slug","نامک"],["description","توضیحات"],["category","دسته"],["level","سطح"],["price","قیمت"]],blog:[["title","عنوان"],["slug","نامک"],["excerpt","خلاصه"],["content","متن"]]};
 export default function AdminActionPage({params}:{params:Promise<{section:string;action:string}>}){
  const [section,setSection]=useState(""); const [data,setData]=useState<Record<string,any>>({}); const [msg,setMsg]=useState(""); const [busy,setBusy]=useState(false);
- useState(()=>{params.then(p=>setSection(p.section))});
+ useEffect(()=>{params.then(p=>setSection(p.section))},[params]);
  async function save(){setBusy(true);setMsg("");try{const r=await fetch("/api/admin/mutate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({section,action:"create",data})});const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error);setMsg("با موفقیت ذخیره شد.");}catch(e){setMsg(e instanceof Error?e.message:"ذخیره انجام نشد.");}finally{setBusy(false)}}
  return <main dir="rtl" className="min-h-screen bg-gray-50 p-5"><div className="mx-auto max-w-2xl"><Link href={"/admin/"+section} className="text-sm text-purple-700">← بازگشت</Link><div className="admin-card mt-5 p-7"><h1 className="text-2xl font-black">ایجاد {section==="products"?"محصول":section==="courses"?"دوره":section==="blog"?"مقاله":"دسته‌بندی"} جدید</h1><div className="mt-6 space-y-4">{(fields[section]||[]).map(([key,label])=><label key={key} className="block text-sm">{label}{["description","excerpt","content"].includes(key)?<textarea rows={4} value={data[key]||""} onChange={e=>setData({...data,[key]:e.target.value})} className="mt-2 w-full rounded-xl border p-3"/>:<input value={data[key]||""} onChange={e=>setData({...data,[key]:e.target.value})} className="mt-2 w-full rounded-xl border p-3"/>}</label>)}</div><button disabled={busy} onClick={save} className="mt-6 rounded-xl bg-black px-6 py-3 font-bold text-white disabled:opacity-50">{busy?"در حال ذخیره...":"ذخیره"}</button>{msg&&<p className="mt-4 rounded-xl bg-gray-100 p-3">{msg}</p>}</div></div></main>
 }
