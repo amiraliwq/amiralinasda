@@ -1,7 +1,7 @@
 "use client";
 
-import {useState} from "react";
-import {useRouter,useSearchParams} from "next/navigation";
+import {useEffect,useState} from "react";
+import {useRouter} from "next/navigation";
 import {createClient} from "../../lib/supabase/client";
 import Link from "next/link";
 
@@ -29,7 +29,9 @@ export default function LoginPage(){
   const [error,setError]=useState("");
   const [busy,setBusy]=useState(false);
   const router=useRouter();
-  const params=useSearchParams();
+  const [search,setSearch]=useState("");
+  useEffect(()=>{setSearch(window.location.search)},[]);
+  const params=new URLSearchParams(search);
   const next=params.get("next")||"/";
   const adminFlow=next.startsWith("/admin");
 
