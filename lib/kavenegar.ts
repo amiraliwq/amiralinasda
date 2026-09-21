@@ -1,4 +1,4 @@
-import Kavenegar = require("kavenegar");
+import * as Kavenegar from "kavenegar";
 
 export function createKavenegar() {
   const apikey = process.env.KAVENEGAR_API_KEY;
