@@ -26,8 +26,11 @@ export default function CartPage() {
   const [items, setItems] = useState<CartItem[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [address, setAddress] = useState({firstName:"",lastName:"",phone:"",postalCode:"",province:"",city:"",fullAddress:"",floor:"",unit:"",ringBell:""});
 
   useEffect(() => setItems(loadCart()), []);
+
+  const hasPhysical = useMemo(() => items.some((item) => !["digital","font","course"].includes(item.type || "")), [items]);
 
   const total = useMemo(
     () => items.reduce((sum, item) => sum + Number(item.price || 0) * Math.max(1, Number(item.qty || 1)), 0),
@@ -56,18 +59,20 @@ export default function CartPage() {
         return;
       }
 
+      if (hasPhysical && (!address.firstName || !address.lastName || !address.phone || !address.postalCode || !address.province || !address.city || !address.fullAddress)) { setMessage("برای محصول فیزیکی، اطلاعات ارسال را کامل کنید."); return; }
+
       const { data, error } = await supabase.rpc("create_order_from_cart", {
         p_items: items.map((item) => ({ id: item.id, qty: Math.max(1, Number(item.qty || 1)) })),
-        p_first_name: null,
-        p_last_name: null,
-        p_phone: null,
-        p_postal_code: null,
-        p_province: null,
-        p_city: null,
-        p_full_address: null,
-        p_floor: null,
-        p_unit: null,
-        p_ring_bell: null,
+        p_first_name: address.firstName || null,
+        p_last_name: address.lastName || null,
+        p_phone: address.phone || null,
+        p_postal_code: address.postalCode || null,
+        p_province: address.province || null,
+        p_city: address.city || null,
+        p_full_address: address.fullAddress || null,
+        p_floor: address.floor || null,
+        p_unit: address.unit || null,
+        p_ring_bell: address.ringBell || null,
       });
 
       if (error) {
@@ -122,6 +127,8 @@ export default function CartPage() {
                   </button>
                 </div>
               ))}
+
+              {hasPhysical && <div className="border-t pt-5"><h2 className="font-black">اطلاعات ارسال</h2><div className="mt-4 grid gap-3 sm:grid-cols-2">{([["firstName","نام"],["lastName","نام خانوادگی"],["phone","شماره تماس"],["postalCode","کد پستی"],["province","استان"],["city","شهر"],["floor","طبقه"],["unit","واحد"],["ringBell","زنگ"] ] as const).map(([key,label])=><input key={key} value={address[key]} onChange={e=>setAddress({...address,[key]:e.target.value})} placeholder={label} className="rounded-xl border p-3" />)}<textarea value={address.fullAddress} onChange={e=>setAddress({...address,fullAddress:e.target.value})} placeholder="آدرس کامل" className="sm:col-span-2 rounded-xl border p-3" rows={3}/></div></div>}
 
               <div className="flex flex-wrap items-center justify-between gap-4 border-t pt-5">
                 <div>
