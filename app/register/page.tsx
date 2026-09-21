@@ -38,7 +38,7 @@ export default function RegisterPage() {
     e.preventDefault(); setError(""); setSuccess("");
     const phone = normalizePhone(form.phone);
     if (!form.firstName.trim() || !form.lastName.trim() || !form.username.trim()) { setError("نام، نام خانوادگی و نام کاربری را کامل کنید."); return; }
-    if (!/^\\+989\\d{9}$/.test(phone)) { setError("لطفاً شماره تماس معتبر وارد کنید؛ نمونه: 09364601110"); return; }
+    if (!/^\+989\d{9}$/.test(phone)) { setError("لطفاً شماره تماس معتبر وارد کنید؛ نمونه: 09364601110"); return; }
     if (form.password.length < 6) { setError("رمز عبور باید حداقل ۶ کاراکتر باشد."); return; }
     if (form.password !== form.confirm) { setError("تکرار رمز عبور با رمز عبور یکسان نیست."); return; }
     setBusy(true);
@@ -46,7 +46,7 @@ export default function RegisterPage() {
       const response = await fetch("/api/auth/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({firstName:form.firstName,lastName:form.lastName,username:form.username,phone,password:form.password})});
       const result=await response.json();
       if(!response.ok||!result.ok){setError(result.error||"ثبت‌نام انجام نشد.");return;}
-      const email=`phone-${phone.replace(/^\\+98/,"")}@auth.amirali-razi-iran.local`;
+      const email=`phone-${phone.replace(/^\+98/,"")}@auth.amirali-razi-iran.local`;
       const {error}=await createClient().auth.signInWithPassword({email,password:form.password});
       if(error) throw error;
       router.push(next);
