@@ -22,3 +22,6 @@
 
 ## Secret handling
 هیچ رمز مدیر یا service-role key در repository قرار نگرفته است.
+
+
+2026-09-21 — Vercel deployment retry trigger.
