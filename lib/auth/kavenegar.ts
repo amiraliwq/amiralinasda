@@ -1,4 +1,4 @@
-import Kavenegar from "kavenegar";
+import * as Kavenegar from "kavenegar";
 
 export function normalizeIranPhone(value: string) {
   const digits = value.replace(/\D/g, "");
