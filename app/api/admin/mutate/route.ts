@@ -26,7 +26,16 @@ export async function POST(request:NextRequest){
   try{
     const user=await guard(); if(!user) return NextResponse.json({ok:false,error:"دسترسی غیرمجاز."},{status:403});
     const body=await request.json(); const section=String(body?.section??""); const action=String(body?.action??"");
-    const cfg=configs[section]; if(!cfg) return NextResponse.json({ok:false,error:"بخش نامعتبر است."},{status:400});
+    const cfg=configs[section]; if(!cfg && !["payments","orders"].includes(section)) return NextResponse.json({ok:false,error:"بخش نامعتبر است."},{status:400});
+    if(section==="payments" || section==="orders") {
+      if(action!=="update" || !payload.id || !payload.status) return NextResponse.json({ok:false,error:"عملیات نامعتبر است."},{status:400});
+      const target=section==="payments"?"payments":"orders";
+      const result=await createAdminClient().from(target).update({status:payload.status,admin_note:payload.admin_note??null,reviewed_at:section==="payments"?new Date().toISOString():undefined}).eq("id",payload.id).select().single();
+      if(result.error) throw result.error;
+      if(section==="payments"){ const orderStatus=payload.status==="approved"?"paid":payload.status==="rejected"?"rejected":undefined; if(orderStatus) await createAdminClient().from("orders").update({status:orderStatus}).eq("id",result.data.order_id); }
+      await createAdminClient().from("audit_logs").insert({actor_id:user.id,action:`update_${section}`,entity_type:target,entity_id:payload.id,after_data:result.data});
+      return NextResponse.json({ok:true,data:result.data});
+    }
     const admin=createAdminClient(); const payload=body?.data??{};
     const row:any={}; for(const f of cfg.fields) if(payload[f]!==undefined) row[f]=payload[f];
     if(section==="blog" && row.published && !payload.published_at) row.published_at=new Date().toISOString();
