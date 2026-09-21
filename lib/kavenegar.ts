@@ -1,4 +1,4 @@
-import Kavenegar = require("kavenegar");
+import * as Kavenegar from "kavenegar";
 
 export function createKavenegar() {
   const apikey = process.env.KAVENEGAR_API_KEY;
@@ -25,14 +25,10 @@ export function sendKavenegarSms(input: {
   if (!receptor) throw new Error("Invalid Iranian phone number");
 
   const api = createKavenegar();
-
   return new Promise<{ response: unknown; status: unknown }>((resolve, reject) => {
-    api.Send(
-      { message: input.message, sender, receptor },
-      (response: unknown, status: unknown) => {
-        if (Number(status) >= 400) reject(new Error(String(status)));
-        else resolve({ response, status });
-      }
-    );
+    api.Send({ message: input.message, sender, receptor }, (response: unknown, status: number) => {
+      if (Number(status) >= 400) reject(new Error(String(status)));
+      else resolve({ response, status });
+    });
   });
 }
