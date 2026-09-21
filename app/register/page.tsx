@@ -35,50 +35,23 @@ export default function RegisterPage() {
   const next = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("next") || "/" : "/";
 
   async function submit(e: FormEvent) {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
+    e.preventDefault(); setError(""); setSuccess("");
     const phone = normalizePhone(form.phone);
-
-    if (!form.firstName.trim() || !form.lastName.trim() || !form.username.trim()) {
-      setError("نام، نام خانوادگی و نام کاربری را کامل کنید.");
-      return;
-    }
-    if (!/^\+989\d{9}$/.test(phone)) {
-      setError("لطفاً یک شماره تماس قابل دسترس و معتبر وارد کنید؛ نمونه: 09364601110");
-      return;
-    }
-    if (form.password.length < 6) {
-      setError("رمز عبور باید حداقل ۶ کاراکتر باشد.");
-      return;
-    }
-    if (form.password !== form.confirm) {
-      setError("تکرار رمز عبور با رمز عبور یکسان نیست.");
-      return;
-    }
-
+    if (!form.firstName.trim() || !form.lastName.trim() || !form.username.trim()) { setError("نام، نام خانوادگی و نام کاربری را کامل کنید."); return; }
+    if (!/^\\+989\\d{9}$/.test(phone)) { setError("لطفاً شماره تماس معتبر وارد کنید؛ نمونه: 09364601110"); return; }
+    if (form.password.length < 6) { setError("رمز عبور باید حداقل ۶ کاراکتر باشد."); return; }
+    if (form.password !== form.confirm) { setError("تکرار رمز عبور با رمز عبور یکسان نیست."); return; }
     setBusy(true);
-    const { data, error } = await createClient().auth.signUp({
-      phone,
-      password: form.password,
-      options: {
-        data: {
-          first_name: form.firstName.trim(),
-          last_name: form.lastName.trim(),
-          full_name: `${form.firstName.trim()} ${form.lastName.trim()}`,
-          username: form.username.trim(),
-        },
-      },
-    });
-
-    if (error) {
-      setError(persianSignupError(error.message));
-    } else if (data.session) {
+    try {
+      const response = await fetch("/api/auth/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({firstName:form.firstName,lastName:form.lastName,username:form.username,phone,password:form.password})});
+      const result=await response.json();
+      if(!response.ok||!result.ok){setError(result.error||"ثبت‌نام انجام نشد.");return;}
+      const email=`phone-${phone.replace(/^\\+98/,"")}@auth.amirali-razi-iran.local`;
+      const {error}=await createClient().auth.signInWithPassword({email,password:form.password});
+      if(error) throw error;
       router.push(next);
-    } else {
-      setSuccess(`ثبت‌نام با موفقیت ایجاد شد. زمان ثبت‌نام: ${new Intl.DateTimeFormat("fa-IR", { dateStyle: "short", timeStyle: "short" }).format(new Date())}. اگر تأیید شماره فعال باشد، کد تأیید برای شما ارسال می‌شود.`);
-    }
-    setBusy(false);
+    } catch { setError("ثبت‌نام انجام نشد. اطلاعات را بررسی کنید."); }
+    finally { setBusy(false); }
   }
 
   const field = (key: keyof typeof form, label: string, placeholder = "") => (
